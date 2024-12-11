@@ -88,11 +88,11 @@ WSGI_APPLICATION = 'attendance_management.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'roadcast',  # Database name
-        'USER': 'sid',       # Database user
-        'PASSWORD': 'sid',  # User password
-        'HOST': 'localhost',    # Hostname
-        'PORT': '5432',         # Default PostgreSQL port
+        'NAME': 'roadcast', 
+        'USER': 'sid',    
+        'PASSWORD': 'sid', 
+        'HOST': 'postgres_attendance_management',   
+        'PORT': '5432',    
     }
 }
 
@@ -183,3 +183,4 @@ CORS_ALLOW_HEADERS = [
 
 USE_TZ = True
 TIME_ZONE = 'Asia/Kolkata' 
+AUTH_USER_MODEL = 'users.User'

@@ -4,6 +4,7 @@ from .models import AttendanceRecord
 from rest_framework.response import Response
 from attendance.serializers import AttendanceRecordSerializer
 from datetime import datetime, timedelta
+import pytz
 
 class AttendanceRecordViewSet(ModelViewSet):
     queryset = AttendanceRecord.objects.all()
@@ -13,9 +14,11 @@ class AttendanceRecordViewSet(ModelViewSet):
     def perform_create(self, serializer):
         staff = self.request.user
         shift = serializer.validated_data['shift']
-        now = datetime.now()
-        shift_start = datetime.combine(now.date(), shift.start_time)
-        shift_end = datetime.combine(now.date(), shift.end_time)
+        india_timezone = pytz.timezone("Asia/Kolkata")
+
+        now = datetime.now(india_timezone)
+        shift_start = datetime.combine(now.date(), shift.start_time, tzinfo=india_timezone)
+        shift_end = datetime.combine(now.date(), shift.end_time, tzinfo=india_timezone)
 
         is_valid_time = (shift_start - timedelta(hours=1)) <= now <= shift_end
         serializer.save(staff=staff, marked_within_shift_time=is_valid_time)

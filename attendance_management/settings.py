@@ -180,3 +180,6 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
     'accept'
 ]
+
+USE_TZ = True
+TIME_ZONE = 'Asia/Kolkata' 

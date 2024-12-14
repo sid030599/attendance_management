@@ -1,36 +1,34 @@
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from .models import AttendanceRecord
 from rest_framework.response import Response
 from attendance.serializers import AttendanceRecordSerializer
-from datetime import datetime, timedelta
-import pytz
 
-class AttendanceRecordViewSet(ModelViewSet):
+
+class AttendanceRecordViewSet(APIView):
     queryset = AttendanceRecord.objects.all()
     serializer_class = AttendanceRecordSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        staff = self.request.user
-        shift = serializer.validated_data['shift']
-        india_timezone = pytz.timezone("Asia/Kolkata")
-
-        now = datetime.now(india_timezone)
-        shift_start = datetime.combine(now.date(), shift.start_time, tzinfo=india_timezone)
-        shift_end = datetime.combine(now.date(), shift.end_time, tzinfo=india_timezone)
-
-        is_valid_time = (shift_start - timedelta(hours=1)) <= now <= shift_end
-        serializer.save(staff=staff, marked_within_shift_time=is_valid_time)
-        
-    def list(self, request):
-        user_id = request.user.id
-        if request.user.role == "manager":
-            records = self.queryset
-            data = AttendanceRecordSerializer(records, many=True).data
-            return Response(data)
+    def get_queryset(self,user):
+        """
+        Define this method to ensure we use the correct queryset for the view.
+        """
+        if user.role == "manager":
+            records = AttendanceRecord.objects.all()
         else:
-            records = AttendanceRecord.objects.filter(staff__id=user_id)
-            data = AttendanceRecordSerializer(records, many=True).data
-            return Response(data)
+            records = AttendanceRecord.objects.filter(staff__id=user.id)
+        return records
+
+    def post(self, request):
+        staff = self.request.user
+        serializer = self.serializer_class(data=request.data, context={"staff":staff})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+    def get(self, request):
+        data = AttendanceRecordSerializer(self.get_queryset(request.user), many=True).data
+        return Response(data)
         

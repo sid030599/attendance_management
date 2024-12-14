@@ -1,7 +1,6 @@
-from rest_framework.routers import DefaultRouter
 from .views import AttendanceRecordViewSet
+from django.urls import path
 
-router = DefaultRouter()
-router.register('records', AttendanceRecordViewSet)
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('records/', AttendanceRecordViewSet.as_view(), name='records'),
+    ]
